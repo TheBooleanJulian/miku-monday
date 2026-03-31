@@ -480,6 +480,7 @@ Available Commands:
 /help - Show this help message
 /status - Show bot status and next scheduled post
 /countdown - Show time remaining until next Miku Monday
+/today - Show today's daily hype message
 /unsubscribe - Remove this channel from bot subscriptions
 /feedback - Send feedback to the developer`).catch((error) => {
         console.error(`Failed to send help message to channel ${chatId}:`, error.message);
@@ -492,6 +493,7 @@ Commands:
 /help - This help message
 /status - Show subscription status
 /countdown - Time until next Miku Monday
+/today - Show today's daily hype message
 /feedback - Send feedback to the developer
 /listchannels - List subscribed channels (dev only)
 
@@ -583,6 +585,11 @@ Current time (GMT+8): ${currentDayName}, ${currentTimeGmt8}
 
 Time remaining: ${days} days, ${hours} hours, ${minutes} minutes, ${seconds} seconds`).catch((error) => {
       console.error(`Failed to send countdown message to ${isChannel ? 'channel' : 'chat'} ${chatId}:`, error.message);
+    });
+  } else if (normalizedText === '/today' || (isChannel && normalizedText === '/today')) {
+    const todayMessage = buildDailyHypeMessage();
+    bot.sendMessage(chatId, todayMessage).catch((error) => {
+      console.error(`Failed to send today message to ${isChannel ? 'channel' : 'chat'} ${chatId}:`, error.message);
     });
   } else if (normalizedText === '/feedback') {
     bot.sendMessage(chatId, `📬 Feedback for Miku Monday Bot:
@@ -737,22 +744,13 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-// Schedule daily hype messages (runs at 12:00 AM GMT+8 every day)
-cron.schedule('0 16 * * *', () => {
-  console.log('Sending daily hype message to all channels...');
-  
-  // Get current day of week in GMT+8 timezone (0 = Sunday, 1 = Monday, etc.)
+// Builds the daily hype message for the current GMT+8 day
+function buildDailyHypeMessage() {
   const now = new Date();
-  // Properly convert UTC to GMT+8 using timezone offset
-  const gmt8Offset = 8 * 60; // GMT+8 in minutes
+  const gmt8Offset = 8 * 60;
   const gmt8Date = new Date(now.getTime() + (gmt8Offset * 60000));
   const dayOfWeek = gmt8Date.getDay();
-  
-  console.log(`📅 UTC date: ${now.toISOString()}`);
-  console.log(`📅 GMT+8 date: ${gmt8Date.toLocaleString('en-US', { timeZone: 'Asia/Singapore' })}`);
-  console.log(`📅 Day of week in GMT+8 (0=Sun, 1=Mon, etc.): ${dayOfWeek}`);
-  console.log(`📅 Selected message index: ${dayOfWeek}`);
-  
+
   // Create day-specific hype messages (5 options per day, one picked randomly)
   const hypeMessageOptions = [
     // Sunday (0)
@@ -822,16 +820,20 @@ cron.schedule('0 16 * * *', () => {
   const randomSong = SONG_POOL[Math.floor(Math.random() * SONG_POOL.length)];
   const songLine = `🎵 Miku's Song of the Day: ${randomSong.title} by ${randomSong.artist}\n${randomSong.url}`;
 
-  // Get the appropriate message for today
-  const hypeMessage = `${todayOptions[randomIndex]}
+  return `${todayOptions[randomIndex]}
 
 ${songLine}
 
 Channels subscribed: ${chatIds.size}
 
 🎵 Add @itsmikumondaybot to your channels for weekly Miku fun!
-🌐 Visit https://its-miku-monday.zeabur.app/status for bot status and info!`;  
-  // Send hype message to all registered chat IDs
+🌐 Visit https://its-miku-monday.zeabur.app/status for bot status and info!`;
+}
+
+// Schedule daily hype messages (runs at 12:00 AM GMT+8 every day)
+cron.schedule('0 16 * * *', () => {
+  console.log('Sending daily hype message to all channels...');
+  const hypeMessage = buildDailyHypeMessage();
   chatIds.forEach(chatId => {
     bot.sendMessage(chatId, hypeMessage).then(() => {
       console.log(`✅ Daily hype message sent successfully to chat ${chatId}!`);
