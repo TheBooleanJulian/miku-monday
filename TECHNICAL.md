@@ -72,12 +72,12 @@ The bot implements proper shutdown handlers for SIGTERM and SIGINT signals to en
 
 ### Daily Hype Messages
 - **Schedule**: `0 16 * * *` (16:00 UTC daily, which is 00:00 GMT+8)
-- **Content**: Day-specific messages building anticipation for Miku Monday
+- **Content**: Each day has 5 randomised quote variants plus a randomly selected Spotify song recommendation from the MIKUEXPO SG playlist (100-track pool)
 - **Days**:
-  - Sunday: Rest and prepare for Monday
-  - Monday: "IT'S MIKU MONDAY!" announcement
-  - Tuesday-Friday: Countdown messages
-  - Saturday: Creative freedom message
+  - Sunday: Rest and prepare for Monday (5 variants)
+  - Monday: "IT'S MIKU MONDAY!" announcement (5 variants)
+  - Tuesday–Saturday: Countdown messages with day-specific flavour (5 variants each)
+- **On-demand**: `/today` calls the same `buildDailyHypeMessage()` function used by the cron, producing an identical message at any time
 
 ## Data Persistence
 

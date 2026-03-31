@@ -50,7 +50,7 @@ Our bot brings joy, creativity, and community to your channels with:
 1. The bot should now be added to your channel
 2. You can test it by sending `/status` to the bot in a private chat
 3. The bot will automatically send a Miku GIF every Monday at 12:00 AM GMT+8 (4:00 PM UTC Sunday)
-4. You'll also receive daily hype messages at 12:00 AM GMT+8 to build anticipation for Miku Monday
+4. You'll also receive daily hype messages at 12:00 AM GMT+8 with a randomised quote and Spotify song recommendation to build anticipation for Miku Monday
 
 ## Bot Commands
 
@@ -58,10 +58,11 @@ Our bot brings joy, creativity, and community to your channels with:
 - `/help` - Show help information
 - `/status` - Show bot status, subscription info, and next scheduled post date
 - `/countdown` - Show time remaining until next Miku Monday
+- `/today` - Show today's daily hype message with song recommendation on demand
 - `/unsubscribe` - Remove this channel from bot subscriptions
 - `/feedback` - Send feedback to the developer (@JulianC97)
 
-> **Note:** The bot sends daily hype messages at 12:00 AM GMT+8 to build anticipation for Miku Monday!
+> **Note:** The bot sends daily hype messages at 12:00 AM GMT+8 with a randomised quote and Spotify song recommendation. Use `/today` to get it any time!
 
 ## Managing Your Subscription
 

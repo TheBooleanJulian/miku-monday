@@ -5,7 +5,7 @@ A Telegram bot that automatically posts a Hatsune Miku GIF every Monday at 12:00
 ## Features
 
 - Automatically sends a Miku GIF every Monday at 12:00 AM GMT+8 (4:00 PM UTC Sunday)
-- Sends daily hype messages at 12:00 AM GMT+8 with day-specific content to build anticipation
+- Sends daily hype messages at 12:00 AM GMT+8 with randomised day-specific quotes and a Spotify song recommendation
 - Works with multiple Telegram channels
 - No technical setup required for end users
 - Completely free and open source
@@ -34,6 +34,7 @@ For detailed instructions, see the [User Guide](USER_GUIDE.md).
 - `/help` - Show help information
 - `/status` - Show bot status, subscription info, and next scheduled post date
 - `/countdown` - Show time remaining until next Miku Monday
+- `/today` - Show today's daily hype message with song recommendation on demand
 - `/unsubscribe` - Remove this channel from bot subscriptions
 - `/feedback` - Send feedback to the developer (@JulianC97)
 
