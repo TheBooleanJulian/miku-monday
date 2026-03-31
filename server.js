@@ -304,6 +304,110 @@ initRedis().then(async () => {
 // Path to the Miku GIF
 const mikuGifPath = process.env.MIKU_GIF_PATH || './its-miku-monday.gif';
 
+// Song pool for daily recommendations (from MIKUEXPO SG playlist)
+const SONG_POOL = [
+  { title: 'Sakura Biyori and Time Machine with Hatsune Miku', artist: 'Ado, Hatsune Miku', url: 'https://open.spotify.com/track/4purp1WOheBTHul8oiltQQ' },
+  { title: 'ワールドイズマイン (マジカルミライ 2021 Live)', artist: 'ryo (supercell), Hatsune Miku', url: 'https://open.spotify.com/track/29rRca4BXxuUCNmcCzHvtl' },
+  { title: 'BRAIN', artist: 'Kanaria', url: 'https://open.spotify.com/track/1JPXGllBrloh5PnNa8D62g' },
+  { title: 'ダイダイダイダイダイキライ', artist: 'Amala', url: 'https://open.spotify.com/track/1gFVXBVuYlDUIEdwOrN5T8' },
+  { title: 'テレパシ', artist: 'DECO*27', url: 'https://open.spotify.com/track/76kJA3LUe1uREGjlaOypkL' },
+  { title: 'QUEEN', artist: 'Kanaria', url: 'https://open.spotify.com/track/32zpHDchUY83w80C8mMtOs' },
+  { title: 'DARLING DANCE', artist: 'Kairikibear', url: 'https://open.spotify.com/track/32cvZTXsJi4EzkvVDMH4Ij' },
+  { title: 'M@GICAL CURE! LOVE SHOT!', artist: 'SAWTOWNE, Hatsune Miku', url: 'https://open.spotify.com/track/63yoRZd5zl6Ah30hfDm97k' },
+  { title: 'Liar Dancer', artist: 'マサラダ', url: 'https://open.spotify.com/track/1YXuCccqCx4AM1PVekISj8' },
+  { title: 'Override', artist: 'Yoshida Yasei', url: 'https://open.spotify.com/track/4FXu6nhlIgbpgxt61ntlnR' },
+  { title: 'ENVY BABY', artist: 'Kanaria', url: 'https://open.spotify.com/track/7rPKtXBW35rSQH1i6QAvyk' },
+  { title: 'D/N/A', artist: 'Azari', url: 'https://open.spotify.com/track/2O5czKVeBaDgqLXJBglDDS' },
+  { title: 'ヒバナ -Reloaded-', artist: 'DECO*27', url: 'https://open.spotify.com/track/2Rn8WVUI9l4SkzjbfISX7p' },
+  { title: 'Shojo Rei', artist: 'Mikito P', url: 'https://open.spotify.com/track/7gEH5vQK5u2vAUpEUF5IJM' },
+  { title: 'ベノム', artist: 'Kairikibear', url: 'https://open.spotify.com/track/54CNsOo0aB99blVSQZxQpD' },
+  { title: 'エゴロック - long ver.', artist: 'ETHREEE', url: 'https://open.spotify.com/track/2FRMwFXODegegRrfLAeVwx' },
+  { title: 'Alien Alien', artist: 'Nayutalien', url: 'https://open.spotify.com/track/3va7Q99A1EJk8eAZ2DV74v' },
+  { title: 'BAKENOHANA', artist: 'NAKISO', url: 'https://open.spotify.com/track/3Nyt0xoTlordHqvBR1EvzG' },
+  { title: 'BUG', artist: 'Kairikibear', url: 'https://open.spotify.com/track/1fqfev7K0mfX7e1W64pDvA' },
+  { title: 'Heat Abnormal', artist: 'Iyowa', url: 'https://open.spotify.com/track/4sZzZNIstrMGQEnKnUFFJD' },
+  { title: 'デビルじゃないもん', artist: 'DECO*27, PinocchioP', url: 'https://open.spotify.com/track/294o7PTrqj9VySUIHaJmXw' },
+  { title: '劣等上等 feat. 鏡音リン・レン', artist: 'Giga, 鏡音リン・レン', url: 'https://open.spotify.com/track/367IrkRR4wk5WtSL41rONn' },
+  { title: 'Ghost Rule', artist: 'DECO*27', url: 'https://open.spotify.com/track/1OAp6qN5KmoGUQ2edICKsC' },
+  { title: 'アイデンティティ', artist: 'Kanaria', url: 'https://open.spotify.com/track/4X3L6G6KDs0jBKvfTkmKmi' },
+  { title: 'チェリーポップ', artist: 'DECO*27', url: 'https://open.spotify.com/track/6yID3RbYKiwn2p2LPz0OkK' },
+  { title: "Rollin' Girls", artist: 'wowaka', url: 'https://open.spotify.com/track/2qEdhXi9KANaoPji89PsNP' },
+  { title: 'ロミオとシンデレラ', artist: 'doriko', url: 'https://open.spotify.com/track/0kiDN35Ern4Mi3rqv3dP6D' },
+  { title: 'リレイアウター', artist: 'INABAKUMORI', url: 'https://open.spotify.com/track/1hc0G2VMFmkqI0JnW5Zbjh' },
+  { title: 'Non-breath oblige', artist: 'PinocchioP', url: 'https://open.spotify.com/track/0LsKplOVgboKBm5MpJsX0H' },
+  { title: 'マトリョシカ', artist: 'hachi', url: 'https://open.spotify.com/track/74A5fPLR86U9XWYostkXwS' },
+  { title: 'ビターチョコデコレーション', artist: 'syudou', url: 'https://open.spotify.com/track/6JFD96zWsIdGPqLOTVE1uU' },
+  { title: 'Cute Na Kanojo', artist: 'syudou', url: 'https://open.spotify.com/track/6eKutUNTqGrL0XfULcnczp' },
+  { title: 'KING', artist: 'Kanaria', url: 'https://open.spotify.com/track/5vCNAauCaecW0tT2mZDLG9' },
+  { title: 'キャットラビング', artist: '香椎モイミ', url: 'https://open.spotify.com/track/2EjDBwyMAALFfKaaSUCRkz' },
+  { title: 'Tell Your World', artist: 'livetune, Hatsune Miku', url: 'https://open.spotify.com/track/3FY8S1VGJEPw16ejMPILzY' },
+  { title: 'ロキ', artist: 'Mikito P', url: 'https://open.spotify.com/track/5WCK18MbTKuOcmLsOXMaHd' },
+  { title: '右肩の蝶', artist: 'noripy', url: 'https://open.spotify.com/track/53iR93x3jFWRDKfFRKEqEr' },
+  { title: '乙女解剖', artist: 'DECO*27', url: 'https://open.spotify.com/track/3n7wJstsHWn6Yl4oKNMPfq' },
+  { title: 'ドーナツホール', artist: 'hachi', url: 'https://open.spotify.com/track/6kwLcF9pDovUbmGOtHo4Ml' },
+  { title: 'マーシャル・マキシマイザー', artist: '柊マグネタイト, Kafu', url: 'https://open.spotify.com/track/38XY1ShCSiYwDaV51sFPT9' },
+  { title: 'プレイ', artist: 'Giga', url: 'https://open.spotify.com/track/4dSanhvaTVCDyVbnl6Uw8T' },
+  { title: 'manimani', artist: 'r-906', url: 'https://open.spotify.com/track/7ntAoXzFfyVDYarUnAzhdO' },
+  { title: '天使の翼。', artist: 'A4。', url: 'https://open.spotify.com/track/1Cd71qm2ohDGj0TesT0m6I' },
+  { title: '宇宙散歩', artist: 'DECO*27', url: 'https://open.spotify.com/track/3I3A9V9uWlop9PYPM8LrlB' },
+  { title: 'Hadal Abyss Zone', artist: 'INABAKUMORI', url: 'https://open.spotify.com/track/0ne8m5zyxvWaD5Hv0Q5MVC' },
+  { title: 'モニタリング (Best Friend Remix)', artist: 'DECO*27', url: 'https://open.spotify.com/track/5an1RVI4IDE9xP7iBRVssg' },
+  { title: 'シンクタンク', artist: 'INABAKUMORI, RIME', url: 'https://open.spotify.com/track/7u4D80x7YHLSOOFPRopioI' },
+  { title: 'Beyond the way', artist: 'Giga', url: 'https://open.spotify.com/track/26I5UfjfxqsUAB2Ryr4utP' },
+  { title: 'CH4NGE feat. KAFU', artist: 'Giga, Kafu', url: 'https://open.spotify.com/track/3ipGZWQ7Q64OA7SwFNVfy2' },
+  { title: 'HERO', artist: 'Ayase, Hatsune Miku', url: 'https://open.spotify.com/track/4oJVybTP5RihSfOn5sxf3W' },
+  { title: 'ボルテッカー', artist: 'DECO*27', url: 'https://open.spotify.com/track/4ESSvbIBRw2Mo6lyQPfhGr' },
+  { title: '花に風', artist: 'balloon', url: 'https://open.spotify.com/track/3SOSqAmO4m7rzC2zbnqwU6' },
+  { title: 'Magnet', artist: 'Koizumi Shinoko, Miss Rabbits', url: 'https://open.spotify.com/track/5RQmv48apWI1EcDlh4ZqlM' },
+  { title: '耳のあるロボットの唄 / 吉原ラメント / おちゃめ機能', artist: 'Tokyo Philharmonic Orchestra, Teto Kasane', url: 'https://open.spotify.com/track/0GPSprVrkINlB24Qceub77' },
+  { title: 'Why Do I', artist: 'Set It Off, Hatsune Miku', url: 'https://open.spotify.com/track/5FH2ZZZDxuaDV4IoVlmjzX' },
+  { title: 'Catch the Wave', artist: 'livetune, Hatsune Miku', url: 'https://open.spotify.com/track/1WCjYD3Tjy3NTKbMJi4yfM' },
+  { title: '熱風', artist: 'Hatsune Miku, 星乃一歌, 花里みのり, 小豆沢こはね, 天馬司, 宵崎奏', url: 'https://open.spotify.com/track/5UHKLcWz2k0NU9OHMsToMi' },
+  { title: '砂の惑星', artist: 'hachi', url: 'https://open.spotify.com/track/2RBQ84niVRC6bBdhe7lc9F' },
+  { title: 'Jack Pot Sad Girl', artist: 'syudou', url: 'https://open.spotify.com/track/7LtUhPG1p6BuPtcow242En' },
+  { title: 'えれくとりっく・えんじぇぅ', artist: 'ヤスオ', url: 'https://open.spotify.com/track/2NuZgqzYhbvoP2IHpt1W7D' },
+  { title: 'Machine Love', artist: 'Jamie Paige', url: 'https://open.spotify.com/track/1H2pPtoPS8kNlqCN7HfT6g' },
+  { title: 'Dizzy Paranoia Girl', artist: 'EVocaloKAT', url: 'https://open.spotify.com/track/2xtFF3XDNWzyaE722SvAWq' },
+  { title: 'Shinkaisyouzyo -deep sea girl-', artist: 'Yuuyu, Hatsune Miku', url: 'https://open.spotify.com/track/3lVvyDll0zmUqtMncLuCKP' },
+  { title: 'G.L.I.T.C.H.', artist: 'Yuta Imai, Teto Kasane', url: 'https://open.spotify.com/track/4UebcAakOAkttze3IwQBRO' },
+  { title: 'モア！ジャンプ！モア！', artist: 'MORE MORE JUMP!', url: 'https://open.spotify.com/track/2l44rj2fDZDv6sTgyYMPxL' },
+  { title: 'JOUOU', artist: 'Hachioji P', url: 'https://open.spotify.com/track/2WP4ioEpsNrHAeI3JkByHE' },
+  { title: '歌姫X', artist: '宮守文学, Hatsune Miku', url: 'https://open.spotify.com/track/343YrHQJvdmZTi8Ii9m3TA' },
+  { title: '光線歌', artist: 'Guiano', url: 'https://open.spotify.com/track/0VQMy7eYKAPQcoOpoOZwga' },
+  { title: 'Tetoris', artist: '柊マグネタイト', url: 'https://open.spotify.com/track/1p4EbJLS0jdWX3tOHdru8S' },
+  { title: 'Anti You', artist: 'Chinozo', url: 'https://open.spotify.com/track/7JNI5KkzH0kmSsPFEnggMf' },
+  { title: 'バグ', artist: '25時、ナイトコードで。', url: 'https://open.spotify.com/track/3Lu59KjuBy96vEaMBgGPud' },
+  { title: 'アイディスマイル', artist: '25時、ナイトコードで。', url: 'https://open.spotify.com/track/6D83eyksFpi3mIIs3KMWrS' },
+  { title: 'ハローセカイ', artist: 'DECO*27', url: 'https://open.spotify.com/track/2SLuTdPR3ptm4V4byF8Iry' },
+  { title: 'Hand in Hand', artist: 'livetune, Hatsune Miku', url: 'https://open.spotify.com/track/7kgTu64wW8N6s4GTk0ksNO' },
+  { title: 'Intergalactic Bound', artist: 'Yunosuke, CircusP, Hatsune Miku', url: 'https://open.spotify.com/track/25tNraNmMNwSEccFVcXxnu' },
+  { title: 'Millennia', artist: 'EMIRI', url: 'https://open.spotify.com/track/3h8I68Sgmgfx1D6OuT7RPz' },
+  { title: 'Medicine', artist: 'Sasuke Haraguchi', url: 'https://open.spotify.com/track/2CYuM18L6hjDyAYT7Xz25h' },
+  { title: '気まぐれメルシィ', artist: 'Hachioji P, Hatsune Miku', url: 'https://open.spotify.com/track/2nvR3T8wXynnDS7N6d81qv' },
+  { title: 'Echo', artist: 'ECrusher-P', url: 'https://open.spotify.com/track/3MUqQ9UOLOJmM3dhYd986M' },
+  { title: 'テオ', artist: 'Leo/need', url: 'https://open.spotify.com/track/579x3N3nGDTEwpSmvwix0F' },
+  { title: 'Happy Halloween', artist: 'Junky, Kagamine Rin', url: 'https://open.spotify.com/track/3slgBP4KlhdO2XOiRnn0R1' },
+  { title: 'カトラリー', artist: '25時、ナイトコードで。', url: 'https://open.spotify.com/track/0AwJspaHoAf5Sq7HNJSdIC' },
+  { title: 'No branding', artist: 'Chinozo', url: 'https://open.spotify.com/track/7sy0DxNzz5vY4hdKDkon9i' },
+  { title: "Don't say Goodbye", artist: 'MIMI, Kafu', url: 'https://open.spotify.com/track/4HQYO8doWO3CrqzjPEaSXV' },
+  { title: 'ふわり', artist: 'Loveit Core, MIMI, Kafu, Hatsune Miku', url: 'https://open.spotify.com/track/4pGIS6fI11UDcfUd0Nqc6i' },
+  { title: "It's okay now", artist: 'MIMI, Kafu', url: 'https://open.spotify.com/track/4VWObwvpVF1llXpLxwUEkb' },
+  { title: 'SECRET', artist: 'MIMI, Kafu', url: 'https://open.spotify.com/track/7dUKNjRiLxS2OXRldCIjH4' },
+  { title: 'サラマンダー', artist: 'DECO*27', url: 'https://open.spotify.com/track/64LMCa7fkdfHYLtCm0kGTR' },
+  { title: 'Yoidoreshirazu', artist: 'Kanaria', url: 'https://open.spotify.com/track/26zbAdTJC4vqqpGwSzvh8Q' },
+  { title: '限りなく灰色へ', artist: '25時、ナイトコードで。', url: 'https://open.spotify.com/track/2kvYOzDQ8BZ9t0w3XU2Qpi' },
+  { title: 'ラグトレイン', artist: 'INABAKUMORI', url: 'https://open.spotify.com/track/6v8fX5yXd15H3xSyvVvJ5e' },
+  { title: 'live', artist: 'Atsu Mizuno, Kafu', url: 'https://open.spotify.com/track/41ZD1iqyS4tMNDem6tBY9Z' },
+  { title: 'Rokuchonen to ichiya monogatari', artist: 'kemu, IA', url: 'https://open.spotify.com/track/6F1dWmY6wDqLTXb3Omt1Oz' },
+  { title: 'Parasite', artist: 'DECO*27', url: 'https://open.spotify.com/track/4re8kXgENW5wqmW2AazeIZ' },
+  { title: 'Until you hug yourself', artist: 'MIMI, Kafu', url: 'https://open.spotify.com/track/6hLrCv5MCXEpG4iIgWiZLU' },
+  { title: 'フォニイ', artist: 'ツミキ, Kafu', url: 'https://open.spotify.com/track/5pBIavXhjzTi0u7pkOK71N' },
+  { title: 'Kuninaru', artist: 'MIMI, Kafu', url: 'https://open.spotify.com/track/3GDrQUjCYUnBL26fG5BGkA' },
+  { title: 'Decadence', artist: 'sasakure.UK', url: 'https://open.spotify.com/track/65tPQdbKnbib1qSVtfogF6' },
+  { title: 'Ready Steady', artist: 'Vivid BAD SQUAD', url: 'https://open.spotify.com/track/3gkNuMdF4BgdEQRr0UuOfl' },
+  { title: '天樂', artist: 'Yuuyu', url: 'https://open.spotify.com/track/79HcrcBQ6s2gDpetLznvAt' },
+];
+
 // Helper function to get next Monday date
 function getNextMonday() {
   const now = new Date();
@@ -649,39 +753,79 @@ cron.schedule('0 16 * * *', () => {
   console.log(`📅 Day of week in GMT+8 (0=Sun, 1=Mon, etc.): ${dayOfWeek}`);
   console.log(`📅 Selected message index: ${dayOfWeek}`);
   
-  // Create day-specific hype messages
-  const hypeMessages = [
-    `🎵 Sunday Hype! 🎵
-
-Rest, reflect, and prepare the next melody. 
-Tomorrow is Miku Monday!`,
-    `🎉 IT'S MIKU MONDAY! 🎉
-
-New week, new track—press play!`,
-    `🔥 Tuesday Momentum 🔥
-
-Momentum builds; keep the tempo steady. 
-6 more days to Miku Monday!`,
-    `🎼 Wednesday Rhythm 🎼
-
-Halfway there—your rhythm is holding strong. 
-5 more days to Miku Monday!`,
-    `🎯 Thursday Focus 🎯
-
-Fine-tune the details; clarity creates impact. 
-4 more days to Miku Monday!`,
-    `✨ Friday Finish ✨
-
-Finish with confidence; let the chorus hit. 
-3 more days to Miku Monday!`,
-    `🎸 Saturday Freedom 🎸
-
-Create freely—no schedule, just sound. 
-2 more days to Miku Monday!`
+  // Create day-specific hype messages (5 options per day, one picked randomly)
+  const hypeMessageOptions = [
+    // Sunday (0)
+    [
+      `🎵 Sunday Hype! 🎵\n\nRest, reflect, and prepare the next melody.\nTomorrow is Miku Monday!`,
+      `🌅 Sunday Serenity 🌅\n\nThe calm before the storm of teal hair and twin-tails.\nMiku Monday is just around the corner!`,
+      `🎶 Sunday Soundcheck 🎶\n\nOne more sleep until the best day of the week.\nAre you ready for Miku Monday?`,
+      `🌙 Sunday Night Hype 🌙\n\nThe week ends, but the excitement is just beginning.\nMiku Monday drops at midnight!`,
+      `🎤 Sunday Countdown 🎤\n\nT-minus 24 hours to Miku Monday.\nGet your speakers ready!`,
+    ],
+    // Monday (1)
+    [
+      `🎉 IT'S MIKU MONDAY! 🎉\n\nNew week, new track—press play!`,
+      `🌟 MIKU MONDAY IS HERE! 🌟\n\nThe wait is over. Let the vocaloid vibes carry you through the week!`,
+      `🎵 HAPPY MIKU MONDAY! 🎵\n\nToday we celebrate the one and only Hatsune Miku.\nTurn it up!`,
+      `💙 IT'S THE BEST DAY OF THE WEEK! 💙\n\nMiku Monday has arrived—sing loud and sing proud!`,
+      `🎤 MIKU MONDAY ACTIVATED! 🎤\n\nAnother Monday made infinitely better by teal twin-tails.\nEnjoy the drop!`,
+    ],
+    // Tuesday (2)
+    [
+      `🔥 Tuesday Momentum 🔥\n\nMomentum builds; keep the tempo steady.\n6 more days to Miku Monday!`,
+      `🎸 Tuesday Groove 🎸\n\nYesterday's hype doesn't have to die.\nRide the wave—6 days until the next Miku Monday!`,
+      `⚡ Tuesday Energy ⚡\n\nChannel that Monday Miku energy into your Tuesday.\n6 more days to go!`,
+      `🎵 Tuesday Encore 🎵\n\nThe encore of Miku Monday lasts all week.\n6 days until the next performance!`,
+      `🌊 Tuesday Ripple 🌊\n\nEvery great song has a lasting echo.\nMiku Monday's vibe carries through—6 days left!`,
+    ],
+    // Wednesday (3)
+    [
+      `🎼 Wednesday Rhythm 🎼\n\nHalfway there—your rhythm is holding strong.\n5 more days to Miku Monday!`,
+      `🎹 Wednesday Harmony 🎹\n\nMiddle of the week, middle of the bridge.\nStay in tune—5 days to Miku Monday!`,
+      `🌀 Wednesday Drop 🌀\n\nYou've hit the midpoint. The chorus is almost here.\n5 more days until Miku Monday!`,
+      `🎶 Hump Day Hype 🎶\n\nWednesday means we're closer than we are far.\n5 days to Miku Monday—keep it going!`,
+      `🎵 Wednesday Wavelength 🎵\n\nSync up and push through. You're halfway to Miku Monday!\n5 more days!`,
+    ],
+    // Thursday (4)
+    [
+      `🎯 Thursday Focus 🎯\n\nFine-tune the details; clarity creates impact.\n4 more days to Miku Monday!`,
+      `🔊 Thursday Buildup 🔊\n\nThe bassline is dropping. Can you feel the weekend approaching?\n4 days to Miku Monday!`,
+      `🎻 Thursday Tension 🎻\n\nThe anticipation is part of the experience.\n4 more days until Miku Monday!`,
+      `⚙️ Thursday Preparation ⚙️\n\nAlmost there. Sharpen your focus and lock in.\n4 days to Miku Monday!`,
+      `🎵 Thursday Countdown 🎵\n\nThe weekend—and Miku Monday—are within reach.\n4 more days!`,
+    ],
+    // Friday (5)
+    [
+      `✨ Friday Finish ✨\n\nFinish with confidence; let the chorus hit.\n3 more days to Miku Monday!`,
+      `🎊 Friday Feels 🎊\n\nThe weekend is here, and Miku Monday follows close behind.\n3 days to go!`,
+      `🎤 Friday Night Hype 🎤\n\nThe drop is coming. Just 3 more days to Miku Monday—stay hyped!`,
+      `🌟 Friday Energy 🌟\n\nEnd the week strong. Miku Monday rewards those who push through.\n3 more days!`,
+      `🎸 TGIF + Miku 🎸\n\nThank goodness it's Friday—and in 3 days, it's Miku Monday!`,
+    ],
+    // Saturday (6)
+    [
+      `🎸 Saturday Freedom 🎸\n\nCreate freely—no schedule, just sound.\n2 more days to Miku Monday!`,
+      `🌈 Saturday Vibes 🌈\n\nEnjoy the weekend—Miku Monday is almost here!\nJust 2 more days!`,
+      `🎵 Saturday Serenade 🎵\n\nLet the music fill your Saturday.\n2 days until the Miku Monday drop!`,
+      `🏖️ Saturday Chill 🏖️\n\nRelax today, because Miku Monday arrives the day after tomorrow!\n2 more days!`,
+      `🎉 Saturday Warmup 🎉\n\nConsider this your pre-game for Miku Monday.\n2 days and counting!`,
+    ],
   ];
-  
+
+  // Pick a random message from today's options
+  const todayOptions = hypeMessageOptions[dayOfWeek];
+  const randomIndex = Math.floor(Math.random() * todayOptions.length);
+  console.log(`📅 Picked random message index ${randomIndex} of ${todayOptions.length} options for day ${dayOfWeek}`);
+
+  // Pick a random song recommendation
+  const randomSong = SONG_POOL[Math.floor(Math.random() * SONG_POOL.length)];
+  const songLine = `🎵 Miku's Song of the Day: ${randomSong.title} by ${randomSong.artist}\n${randomSong.url}`;
+
   // Get the appropriate message for today
-  const hypeMessage = `${hypeMessages[dayOfWeek]}
+  const hypeMessage = `${todayOptions[randomIndex]}
+
+${songLine}
 
 Channels subscribed: ${chatIds.size}
 
