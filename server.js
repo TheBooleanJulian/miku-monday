@@ -742,30 +742,36 @@ cron.schedule('0 16 * * *', () => {
   });
 });
 
-// Handle incoming messages
+// Handle incoming messages (commands only)
 bot.on('message', async (msg) => {
+  const isCommand = msg.entities && msg.entities.some(e => e.type === 'bot_command');
+  if (!isCommand) return;
+
   console.log(`=== RECEIVED MESSAGE (Instance: ${INSTANCE_ID}) ===`);
   console.log('Message timestamp:', new Date().toISOString());
   console.log('Message object:', JSON.stringify(msg, null, 2));
-  
+
   const chatId = msg.chat.id;
   const messageText = msg.text;
-  
+
   console.log(`Processing message: chatId=${chatId}, messageText=${messageText}`);
   await handleCommand(chatId, messageText, false);
   console.log('Finished processing message');
 });
 
 
-// Handle incoming channel posts
+// Handle incoming channel posts (commands only)
 bot.on('channel_post', async (msg) => {
+  const isCommand = msg.entities && msg.entities.some(e => e.type === 'bot_command');
+  if (!isCommand) return;
+
   console.log(`=== RECEIVED CHANNEL POST (Instance: ${INSTANCE_ID}) ===`);
   console.log('Channel post timestamp:', new Date().toISOString());
   console.log('Channel post object:', JSON.stringify(msg, null, 2));
-  
+
   const chatId = msg.chat.id;
   const messageText = msg.text;
-  
+
   console.log(`Processing channel post: chatId=${chatId}, messageText=${messageText}`);
   await handleCommand(chatId, messageText, true);
   console.log('Finished processing channel post');
