@@ -338,8 +338,9 @@ async function handleCommand(chatId, messageText, isChannel = false) {
     console.log(`🔄 Existing chat ID detected: ${chatId} (Total: ${chatIds.size})`);
   }
   
-  // Normalize message text by trimming whitespace
-  const normalizedText = messageText ? messageText.trim() : '';
+  // Normalize message text by trimming whitespace and stripping @botname suffix
+  // (Telegram appends @botname to commands in groups, e.g. /today@itsmikumondaybot)
+  const normalizedText = messageText ? messageText.trim().replace(/@\S+$/, '') : '';
   console.log(`Normalized text: "${normalizedText}"`);
   
   if (normalizedText === '/start' || (isChannel && normalizedText && normalizedText.startsWith('/start'))) {
