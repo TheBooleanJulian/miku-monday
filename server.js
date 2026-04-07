@@ -292,15 +292,17 @@ async function saveChatIds() {
 
 // Load chat IDs on startup
 initRedis().then(async () => {
-  // Clear webhook to prevent 409 conflicts
-  try {
-    console.log('Attempting to clear webhook...');
-    await bot.deleteWebHook();
-    console.log('Webhook cleared, starting polling...');
-  } catch (err) {
-    console.error('Error clearing webhook:', err);
+  // Only clear webhook and start polling in development mode
+  if (!isProduction) {
+    try {
+      console.log('Attempting to clear webhook...');
+      await bot.deleteWebHook();
+      console.log('Webhook cleared, starting polling...');
+    } catch (err) {
+      console.error('Error clearing webhook:', err);
+    }
   }
-  
+
   await loadChatIds();
 });
 
@@ -968,7 +970,7 @@ process.on('uncaughtException', (error) => {
 
 // Setup webhook for production (Zeabur)
 if (isProduction) {
-  const webhookUrl = process.env.WEBHOOK_URL || `https://its-miku-monday.zeabur.app/bot${token}`;
+  const webhookUrl = process.env.WEBHOOK_URL || `https://its-miku-monday.zeabur.app/bot`;
   console.log(`Setting up webhook: ${webhookUrl}`);
 
   bot.setWebHook(webhookUrl)
@@ -980,7 +982,7 @@ if (isProduction) {
     });
 
   // Webhook endpoint
-  app.post(`/bot${token}`, (req, res) => {
+  app.post(`/bot`, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
   });
@@ -990,7 +992,7 @@ if (isProduction) {
 app.listen(port, () => {
   console.log(`Miku Monday Bot server (Instance: ${INSTANCE_ID}) running on port ${port}`);
   console.log(`Mode: ${isProduction ? 'Production (Webhook)' : 'Development (Polling)'}`);
-  console.log(`Webhook URL: /bot${token}`);
+  console.log(`Webhook URL: /bot`);
   console.log('Server started successfully!');
 });
 
