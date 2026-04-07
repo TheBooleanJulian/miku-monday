@@ -22,6 +22,7 @@ if (!token) {
 
 // Unique instance ID for debugging multiple instances
 const INSTANCE_ID = crypto.randomBytes(4).toString('hex');
+const SERVER_START_TIME = new Date().toISOString();
 console.log(`Starting Miku Monday Bot instance: ${INSTANCE_ID}`);
 
 // Create Express app
@@ -916,7 +917,8 @@ app.get('/api/status', (req, res) => {
         timezone: 'GMT+8'
       },
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      serverStartTime: SERVER_START_TIME
     };
     
     res.json(statusData);
