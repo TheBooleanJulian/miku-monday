@@ -33,8 +33,10 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // Create a bot instance with additional options for better reliability
+// Use polling for local development, webhooks for production (Zeabur)
+const isProduction = process.env.NODE_ENV === 'production' || process.env.ZEABUR === 'true';
 const bot = new TelegramBot(token, {
-  polling: true,
+  polling: !isProduction, // Disable polling in production
   retryTimeout: 10000, // 10 seconds retry timeout
   restartDelay: 5000, // 5 seconds delay before restart
   request: {
@@ -43,7 +45,7 @@ const bot = new TelegramBot(token, {
   }
 });
 
-console.log('Bot instance created with polling enabled');
+console.log(`Bot instance created with ${isProduction ? 'webhook' : 'polling'} mode enabled`);
 
 // Redis client
 let redisClient = null;
@@ -964,9 +966,30 @@ process.on('uncaughtException', (error) => {
   process.exit(1);
 });
 
+// Setup webhook for production (Zeabur)
+if (isProduction) {
+  const webhookUrl = process.env.WEBHOOK_URL || `https://its-miku-monday.zeabur.app/bot${token}`;
+  console.log(`Setting up webhook: ${webhookUrl}`);
+
+  bot.setWebHook(webhookUrl)
+    .then(() => {
+      console.log('Webhook set successfully');
+    })
+    .catch(error => {
+      console.error('Failed to set webhook:', error);
+    });
+
+  // Webhook endpoint
+  app.post(`/bot${token}`, (req, res) => {
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
+  });
+}
+
 // Start the server
 app.listen(port, () => {
   console.log(`Miku Monday Bot server (Instance: ${INSTANCE_ID}) running on port ${port}`);
+  console.log(`Mode: ${isProduction ? 'Production (Webhook)' : 'Development (Polling)'}`);
   console.log(`Webhook URL: /bot${token}`);
   console.log('Server started successfully!');
 });
