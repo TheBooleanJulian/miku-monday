@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:open.spotify.com)",
+      "WebFetch(domain:api.spotify.com)",
+      "Bash(curl -s \"https://open.spotify.com/embed/playlist/4Pv3LhUTrEX3aTjKLrSWeG\" -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\")",
+      "Bash(py --version)",
+      "Bash(TOKEN=\"BQDWwPpcRcrVSTuknBDJoqYU8CqF_5_Wvp1_GSxleT0DytMOC6kPr7-JFggUGMEGUz5mHpkKD3EyNHcZ_e5sCpC66du7DtmkpjI1IssqhIZ1RcO4Sq8FX9t6ANJBXRTTGhKGQ3G5wSg\" curl -s \"https://api.spotify.com/v1/playlists/4Pv3LhUTrEX3aTjKLrSWeG/tracks?limit=50&offset=0&fields=total,items\\(track\\(id,name,artists\\(name\\)\\)\\)\" -H \"Authorization: Bearer $TOKEN\")"
+    ]
+  }
+}

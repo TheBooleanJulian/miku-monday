@@ -1,6 +1,6 @@
 # Miku Monday Bot
 
-A Telegram bot that automatically posts a Hatsune Miku GIF every Monday at 12:00 AM GMT+8 (4:00 PM UTC Sunday) to Telegram channels. Designed for easy deployment on cloud platforms like Zeabur, allowing non-technical users to simply add the bot to their channels without any complex setup.
+A Telegram bot that automatically posts a Hatsune Miku GIF and random Vocaloid song at 12:00 AM GMT+8 (4:00 PM UTC) everyday to Telegram channels. Designed for easy deployment on cloud platforms like Zeabur, allowing non-technical users to simply add the bot to their channels without any complex setup.
 
 ## Features
 
@@ -36,7 +36,7 @@ For detailed instructions, see the [User Guide](USER_GUIDE.md).
 - `/countdown` - Show time remaining until next Miku Monday
 - `/today` - Show today's daily hype message with song recommendation on demand
 - `/unsubscribe` - Remove this channel from bot subscriptions
-- `/feedback` - Send feedback to the developer (@JulianC97)
+- `/feedback` - Send feedback to the developer (@TheBooleanJulian)
 
 ## For Developers
 

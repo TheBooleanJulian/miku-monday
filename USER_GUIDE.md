@@ -8,7 +8,7 @@ Miku Monday is a celebration of Hatsune Miku, the world's most famous Vocaloid c
 
 Our bot brings joy, creativity, and community to your channels with:
 - Weekly Miku GIFs to start the week with positivity
-- Daily hype messages to build anticipation
+- Daily hype messages and Vocaloid song recommendation to build anticipation
 - No technical setup required
 - Completely free service
 
@@ -60,7 +60,7 @@ Our bot brings joy, creativity, and community to your channels with:
 - `/countdown` - Show time remaining until next Miku Monday
 - `/today` - Show today's daily hype message with song recommendation on demand
 - `/unsubscribe` - Remove this channel from bot subscriptions
-- `/feedback` - Send feedback to the developer (@JulianC97)
+- `/feedback` - Send feedback to the developer (@TheBooleanJulian)
 
 > **Note:** The bot sends daily hype messages at 12:00 AM GMT+8 with a randomised quote and Spotify song recommendation. Use `/today` to get it any time!
 
@@ -129,7 +129,7 @@ We believe in creating a positive, inclusive space for all Miku fans:
 - Keep discussions respectful and friendly
 - Share your love for Miku and Vocaloid music
 - Be welcoming to newcomers
-- Report any inappropriate content to the bot developer
+- Report any inappropriate content to the bot developer (@TheBooleanJulian)
 
 ## Support
 
