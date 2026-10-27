@@ -3,16 +3,17 @@
 //   POST /webhook        Telegram updates; checked against WEBHOOK_SECRET
 //   cron 0 16 * * SUN    Monday 00:00 SGT: the Miku GIF to every subscribed chat
 //   cron 0 16 * * *      00:00 SGT daily: hype message + song of the day
-//   GET  /health, /api/health, /api/status, /api/chat-ids   same shapes the status page and monitors used
+//   GET  /status         branded status page (thebooleanjulian-bot-core, Julian Unified UI)
+//   GET  /healthz        bot-core health JSON; the bot-core fan-out gates on it
+//   GET  /health, /api/health, /api/status, /api/chat-ids   same shapes monitors used before
 //
 // Subscribed chats live in D1 (table chats, see schema.sql) instead of an encrypted Redis blob.
-// Commands and copy are unchanged from server.js.
+// Commands and copy are unchanged from server.js. Shared plumbing comes from thebooleanjulian-bot-core
+// (tracked at main), so a bot-core change reaches this bot through the canary-gated fan-out.
 
-import { log } from './lib/log.js';
-import { api, verifyWebhook } from './lib/telegram.js';
-import { parseCommand } from './lib/router.js';
+import { log, api, verifyWebhook, parseCommand, healthz, statusPage, serveBrand } from 'thebooleanjulian-bot-core';
 import { sgtNow, nextMikuMonday, formatSgtDate, buildDailyHypeMessage } from './hype.js';
-import songs from './songs.json';
+import songs from './songs.json' with { type: 'json' };
 
 const GIF_CAPTION = 'Happy Miku Monday! 🎉\nHave a great week with Hatsune Miku! 🎵';
 
@@ -169,9 +170,48 @@ async function broadcast(env, label, sendOne) {
 // ── http ───────────────────────────────────────────────────────────────────
 const json = (body, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
 
+const COMMANDS = [
+  ['/start', 'Register this chat or channel'],
+  ['/help', 'Show help'],
+  ['/status', 'Subscription info and next scheduled post'],
+  ['/countdown', 'Time until the next Miku Monday'],
+  ['/today', "Today's hype message"],
+  ['/unsubscribe', 'Remove this channel'],
+  ['/feedback', 'Send feedback to the developer']
+];
+
+async function dbCheck(env) {
+  try {
+    return { checks: { d1: 'ok' }, count: await db.count(env) };
+  } catch (err) {
+    return { checks: { d1: `FAIL: ${err.message}` }, count: null };
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const { pathname } = new URL(request.url);
+
+    const brand = serveBrand(request);
+    if (brand) return brand;
+    if (pathname === '/healthz') {
+      const { checks, count } = await dbCheck(env);
+      return healthz(env, { checks, extra: { chats: count } });
+    }
+    if (pathname === '/status') {
+      const { checks, count } = await dbCheck(env);
+      const { day, time } = sgtNow();
+      return statusPage(env, {
+        name: 'Miku Monday Bot',
+        username: '@itsmikumondaybot',
+        icon: '🎵',
+        description: 'A Hatsune Miku GIF every Monday at 12:00 AM GMT+8, plus a daily hype message and song of the day.',
+        ok: Object.values(checks).every((v) => v === 'ok'),
+        metrics: { 'Channels': count ?? '—', 'Now (GMT+8)': `${day.slice(0, 3)} ${time.slice(0, 5)}`, 'Next GIF': formatSgtDate(nextMikuMonday()).replace(/^Monday, /, 'Mon ') },
+        commands: COMMANDS,
+        sections: [{ title: 'Schedule', html: 'Miku GIF: <b>Monday 12:00 AM GMT+8</b><br/>Daily hype + song of the day: <b>every day 12:00 AM GMT+8</b>' }]
+      });
+    }
 
     if (pathname === '/webhook' && request.method === 'POST') {
       if (!verifyWebhook(request, env)) return new Response('forbidden', { status: 403 });

@@ -17,7 +17,7 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "run_worker_first": ["/webhook", "/health", "/api/*"]
+    "run_worker_first": ["/webhook", "/health", "/healthz", "/status", "/brand/*", "/api/*"]
   },
   "routes": [{ "pattern": "miku-monday.thebooleanjulian.dev", "custom_domain": true }],
   "version_metadata": { "binding": "CF_VERSION_METADATA" },
