@@ -7,23 +7,26 @@
 //   GET  /healthz        bot-core health JSON; the bot-core fan-out gates on it
 //   GET  /health, /api/health, /api/status, /api/chat-ids   same shapes monitors used before
 //
-// Subscribed chats live in D1 (table chats, see schema.sql) instead of an encrypted Redis blob.
+// Subscribed chats live in Supabase (schema miku_monday in thebooleanjulian-db) via Hyperdrive.
 // Commands and copy are unchanged from server.js. Shared plumbing comes from thebooleanjulian-bot-core
 // (tracked at main), so a bot-core change reaches this bot through the canary-gated fan-out.
 
 import { log, api, verifyWebhook, parseCommand, healthz, statusPage, serveBrand } from 'thebooleanjulian-bot-core';
+import { withDb } from 'thebooleanjulian-bot-core/db';
 import { sgtNow, nextMikuMonday, formatSgtDate, buildDailyHypeMessage } from './hype.js';
 import songs from './songs.json' with { type: 'json' };
 
 const GIF_CAPTION = 'Happy Miku Monday! 🎉\nHave a great week with Hatsune Miku! 🎵';
 
 // ── storage ────────────────────────────────────────────────────────────────
+// Supabase project "thebooleanjulian", schema miku_monday, via this Worker's own Hyperdrive config.
+const q = (env, fn) => withDb(env, null, fn);
 const db = {
-  add: async (env, id) => (await env.DB.prepare('INSERT OR IGNORE INTO chats (chat_id) VALUES (?)').bind(String(id)).run()).meta.changes > 0,
-  remove: async (env, id) => (await env.DB.prepare('DELETE FROM chats WHERE chat_id = ?').bind(String(id)).run()).meta.changes > 0,
-  has: async (env, id) => Boolean(await env.DB.prepare('SELECT 1 FROM chats WHERE chat_id = ?').bind(String(id)).first()),
-  count: async (env) => (await env.DB.prepare('SELECT COUNT(*) AS n FROM chats').first()).n,
-  all: async (env) => (await env.DB.prepare('SELECT chat_id FROM chats').all()).results.map((r) => r.chat_id)
+  add: async (env, id) => (await q(env, (sql) => sql`insert into miku_monday.chats (chat_id) values (${String(id)}) on conflict do nothing returning chat_id`)).length > 0,
+  remove: async (env, id) => (await q(env, (sql) => sql`delete from miku_monday.chats where chat_id = ${String(id)} returning chat_id`)).length > 0,
+  has: async (env, id) => (await q(env, (sql) => sql`select 1 from miku_monday.chats where chat_id = ${String(id)}`)).length > 0,
+  count: async (env) => (await q(env, (sql) => sql`select count(*)::int as n from miku_monday.chats`))[0].n,
+  all: async (env) => (await q(env, (sql) => sql`select chat_id from miku_monday.chats order by added_at`)).map((r) => r.chat_id)
 };
 
 const mask = (id) => {
@@ -182,9 +185,9 @@ const COMMANDS = [
 
 async function dbCheck(env) {
   try {
-    return { checks: { d1: 'ok' }, count: await db.count(env) };
+    return { checks: { postgres: 'ok' }, count: await db.count(env) };
   } catch (err) {
-    return { checks: { d1: `FAIL: ${err.message}` }, count: null };
+    return { checks: { postgres: `FAIL: ${String(err.message).replace(/postgres(ql)?:\/\/\S+/g, '<conn>')}` }, count: null };
   }
 }
 
@@ -222,7 +225,7 @@ export default {
     if (pathname === '/health') return new Response('Miku Monday Bot is running!');
     if (pathname === '/api/health') {
       try {
-        return json({ online: true, timestamp: new Date().toISOString(), chatIdsCount: await db.count(env), storage: { type: 'd1', ok: true }, telegram: { mode: 'webhook' } });
+        return json({ online: true, timestamp: new Date().toISOString(), chatIdsCount: await db.count(env), storage: { type: 'supabase', ok: true }, telegram: { mode: 'webhook' } });
       } catch (err) {
         return json({ online: false, error: err.message, timestamp: new Date().toISOString() }, 500);
       }
