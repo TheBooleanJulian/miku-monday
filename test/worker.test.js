@@ -4,33 +4,25 @@ import assert from 'node:assert/strict';
 
 import worker from '../worker.js';
 
-function fakeD1(ids = ['-1001', '-1002']) {
+// Stand-in for the postgres tagged-template client (bot-core's withDb accepts it as env.SQL).
+function fakeSql(ids = ['-1001', '-1002']) {
   const rows = new Set(ids);
-  return {
-    prepare(sql) {
-      let args = [];
-      const stmt = {
-        bind: (...a) => { args = a; return stmt; },
-        async run() {
-          if (sql.startsWith('INSERT')) { const had = rows.has(args[0]); rows.add(args[0]); return { meta: { changes: had ? 0 : 1 } }; }
-          if (sql.startsWith('DELETE')) { const had = rows.delete(args[0]); return { meta: { changes: had ? 1 : 0 } }; }
-          return { meta: { changes: 0 } };
-        },
-        async first() {
-          if (sql.includes('COUNT')) return { n: rows.size };
-          return rows.has(args[0]) ? { 1: 1 } : null;
-        },
-        async all() { return { results: [...rows].map((chat_id) => ({ chat_id })) }; }
-      };
-      return stmt;
-    }
+  return async (strings, ...values) => {
+    const q = strings.join('?').replace(/\s+/g, ' ').trim().toLowerCase();
+    const id = values[0];
+    if (q.startsWith('insert')) { if (rows.has(id)) return []; rows.add(id); return [{ chat_id: id }]; }
+    if (q.startsWith('delete')) return rows.delete(id) ? [{ chat_id: id }] : [];
+    if (q.includes('count(*)')) return [{ n: rows.size }];
+    if (q.startsWith('select 1')) return rows.has(id) ? [{ '?column?': 1 }] : [];
+    if (q.startsWith('select chat_id')) return [...rows].map((chat_id) => ({ chat_id }));
+    throw new Error(`unexpected query: ${q}`);
   };
 }
 
-const env = () => ({ DB: fakeD1(), BOT_CORE_SHA: 'abc1234', PUBLIC_URL: 'https://miku-monday.thebooleanjulian.dev', ASSETS: { fetch: () => new Response('asset') } });
+const env = () => ({ SQL: fakeSql(), BOT_CORE_SHA: 'abc1234', PUBLIC_URL: 'https://miku-monday.thebooleanjulian.dev', ASSETS: { fetch: () => new Response('asset') } });
 const get = (path, e = env()) => worker.fetch(new Request(`https://x${path}`), e, { waitUntil() {} });
 
-test('/healthz passes with D1 reachable and reports the bot-core sha', async () => {
+test('/healthz passes with Postgres reachable and reports the bot-core sha', async () => {
   const res = await get('/healthz');
   assert.equal(res.status, 200);
   const body = await res.json();
@@ -39,10 +31,12 @@ test('/healthz passes with D1 reachable and reports the bot-core sha', async () 
   assert.equal(body.chats, 2);
 });
 
-test('/healthz fails when D1 is broken', async () => {
+test('/healthz fails when Postgres is unreachable, without leaking the URL', async () => {
   const e = env();
-  e.DB = { prepare() { throw new Error('d1 down'); } };
-  assert.equal((await get('/healthz', e)).status, 500);
+  e.SQL = () => Promise.reject(new Error('connect failed postgres://u:secret@h/db'));
+  const res = await get('/healthz', e);
+  assert.equal(res.status, 500);
+  assert.doesNotMatch(await res.text(), /secret/);
 });
 
 test('/status is the branded bot-core page with the channel count', async () => {
