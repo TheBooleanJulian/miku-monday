@@ -1,0 +1,25 @@
+{
+  // Miku Monday Bot on Cloudflare Workers (webhook + Cron Triggers + D1). Replaces server.js on Zeabur.
+  // Secrets: BOT_TOKEN, WEBHOOK_SECRET, DEVELOPER_CHAT_ID (moved from Zeabur with zeabur-migration/push_secrets.py).
+  // Cutover: register the webhook once —
+  //   curl "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" -d url=https://miku-monday.thebooleanjulian.dev/webhook -d secret_token=<WEBHOOK_SECRET>
+  "name": "miku-monday",
+  "account_id": "c580c4403524273d1bece674117472dd",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-01",
+  "workers_dev": true,
+  "vars": {
+    "PUBLIC_URL": "https://miku-monday.thebooleanjulian.dev",
+    "BOT_USERNAME": "itsmikumondaybot"
+  },
+  "d1_databases": [{ "binding": "DB", "database_name": "miku-monday", "database_id": "916cf7c3-8810-4d47-bfb3-236baa914f69" }],
+  "triggers": { "crons": ["0 16 * * SUN", "0 16 * * *"] },
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/webhook", "/health", "/api/*"]
+  },
+  "routes": [{ "pattern": "miku-monday.thebooleanjulian.dev", "custom_domain": true }],
+  "version_metadata": { "binding": "CF_VERSION_METADATA" },
+  "observability": { "enabled": true }
+}
