@@ -17,3 +17,6 @@ node_modules/
 .node_repl_history
 # Cloudflare Wrangler local state
 .wrangler/
+
+# Local tool state, never commit
+.claude/
