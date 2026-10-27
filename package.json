@@ -4,14 +4,16 @@
   "description": "A Telegram bot that posts a Miku GIF every Monday at 12 AM",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "dotenv": "^17.2.3",
     "express": "^4.22.1",
     "node-cron": "^3.0.2",
     "node-telegram-bot-api": "^0.61.0",
-    "redis": "^5.10.0"
+    "redis": "^5.10.0",
+    "thebooleanjulian-bot-core": "github:TheBooleanJulian/thebooleanjulian-bot-core#main"
   },
   "keywords": [
     "telegram",
